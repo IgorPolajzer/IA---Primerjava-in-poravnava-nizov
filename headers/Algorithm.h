@@ -4,6 +4,7 @@
 
 #ifndef IAK_PRIMERJAVA_IN_PORAVNAVA__NIZOV_ALGORITHM_H
 #define IAK_PRIMERJAVA_IN_PORAVNAVA__NIZOV_ALGORITHM_H
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -91,14 +92,19 @@ namespace Algorithm {
         auto v = firstDnk.substr(0, n);
         auto w = secondDnk.substr(0, m);
 
-        auto start = std::chrono::high_resolution_clock::now();
-        auto lcs = LCS(v, w);
-        auto stop = std::chrono::high_resolution_clock::now();
+        std::pair<size_t, std::vector<std::vector<Direction>>> lcs;
+        std::vector<long long> durations;
+
+        for (size_t i = 0; i < 100; i++) {
+            auto start = std::chrono::high_resolution_clock::now();
+            lcs = LCS(v, w);
+            auto stop = std::chrono::high_resolution_clock::now();
+            durations.push_back(duration_cast<std::chrono::microseconds>(stop - start).count());
+        }
+
+        long long avgMicros = std::accumulate(durations.begin(), durations.end(), 0LL) / 100;
 
         size_t d = n + m - 2 * lcs.first;
-
-        const auto msDuration = duration_cast<std::chrono::milliseconds>(stop - start);
-        const auto microsDuration = duration_cast<std::chrono::microseconds>(stop - start);
 
         Util::output(outputFile, "LCS = ", true);
         printLCS(lcs.second, v, n, m, outputFile);
@@ -106,9 +112,9 @@ namespace Algorithm {
 
         Util::output(
             outputFile,
-            "\nExecution time: " +
-            std::to_string(msDuration.count()) + " ms -> " +
-            std::to_string(microsDuration.count()) + " us\n",
+            "\nExecution time (avg 100 runs): " +
+            std::to_string(avgMicros / 1000) + " ms -> " +
+            std::to_string(avgMicros) + " us\n",
             true
         );
     }
