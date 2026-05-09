@@ -12,22 +12,24 @@
 
 namespace Algorithm {
 
+    inline void printLCS(const std::vector<std::vector<Direction>> &b, const std::string &v, size_t i, size_t j) {
+        if (i == 0 || j == 0) return;
+
+        if (b[i][j] == Direction::DIAGONAL) {
+            printLCS(b, v, i-1, j-1);
+            std::cout << v[i - 1] << " ";
+        } else {
+            if (b[i][j] == Direction::UP) {
+                printLCS(b, v, i-1, j);
+            } else {
+                printLCS(b, v, i, j-1);
+            }
+        }
+    }
+
     inline std::pair<size_t, std::vector<std::vector<Direction>>> LCS(std::string v, std::string w) {
         std::vector<std::vector<size_t>> s; // Intermediate distances.
         std::vector<std::vector<Direction>> b; // Moving directions.
-
-        // Init s.
-        /*for (size_t i = 0; i <= v.size(); i++) {
-            s.emplace_back();
-
-            if (i == 0) {
-                for (size_t j = 0; j <= w.size(); j++) {
-                    s[i].push_back(0);
-                }
-            } else {
-                s[i].push_back(0);
-            }
-        }*/
 
         // Init s and b.
         for (size_t i = 0; i <= v.size(); i++) {
@@ -51,13 +53,11 @@ namespace Algorithm {
 
                 if (s[i][j] == s[i-1][j]) direction = Direction::UP;
                 else if (s[i][j] == s[i][j-1]) direction = Direction::LEFT;
-                else if (s[i][j] == s[i-1][j-1]) direction = Direction::DIAGONAL;
+                else if (s[i][j] == s[i-1][j-1] + 1) direction = Direction::DIAGONAL;
 
                 b[i][j] = direction;
             }
         }
-
-        Util::print_grid(s, v, w);
 
         return { s.back().back(), b };
     }
@@ -71,7 +71,10 @@ namespace Algorithm {
 
         auto lcs = LCS(v, w);
 
-        std::cout << lcs.first << std::endl;
+        size_t d = n + m - 2 * lcs.first;
+
+        printLCS(lcs.second, v, n, m);
+        std::cout << d << std::endl;
     }
 }
 
