@@ -3,4 +3,7 @@ project(IAK_Primerjava_in_poravnava__nizov)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(IAK_Primerjava_in_poravnava__nizov main.cpp)
+add_executable(IAK_Primerjava_in_poravnava__nizov main.cpp
+        headers/Util.h
+        headers/Algorithm.h
+        headers/Direction.h)

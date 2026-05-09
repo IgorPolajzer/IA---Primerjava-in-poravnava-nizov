@@ -1,0 +1,15 @@
+//
+// Created by igor on 5/9/26.
+//
+
+#ifndef IAK_PRIMERJAVA_IN_PORAVNAVA__NIZOV_DIRECTION_H
+#define IAK_PRIMERJAVA_IN_PORAVNAVA__NIZOV_DIRECTION_H
+
+enum class Direction {
+    UNKNOWN = 0,
+    UP = 1,
+    LEFT = 2,
+    DIAGONAL = 3
+};
+
+#endif //IAK_PRIMERJAVA_IN_PORAVNAVA__NIZOV_DIRECTION_H
