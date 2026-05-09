@@ -11,25 +11,27 @@
 #include "Util.h"
 
 namespace Algorithm {
+    const std::string OUTPUT_FOLDER = "results/";
 
-    inline void printLCS(const std::vector<std::vector<Direction>> &b, const std::string &v, size_t i, size_t j) {
+    inline void printLCS(const std::vector<std::vector<Direction> > &b, const std::string &v, size_t i, size_t j,
+                         std::ofstream &outputFile) {
         if (i == 0 || j == 0) return;
 
         if (b[i][j] == Direction::DIAGONAL) {
-            printLCS(b, v, i-1, j-1);
-            std::cout << v[i - 1] << " ";
+            printLCS(b, v, i - 1, j - 1, outputFile);
+            Util::output(outputFile, std::string(1, v[i - 1]) + " ", true);
         } else {
             if (b[i][j] == Direction::UP) {
-                printLCS(b, v, i-1, j);
+                printLCS(b, v, i - 1, j, outputFile);
             } else {
-                printLCS(b, v, i, j-1);
+                printLCS(b, v, i, j - 1, outputFile);
             }
         }
     }
 
-    inline std::pair<size_t, std::vector<std::vector<Direction>>> LCS(std::string v, std::string w) {
-        std::vector<std::vector<size_t>> s; // Intermediate distances.
-        std::vector<std::vector<Direction>> b; // Moving directions.
+    inline std::pair<size_t, std::vector<std::vector<Direction> > > LCS(std::string v, std::string w) {
+        std::vector<std::vector<size_t> > s; // Intermediate distances.
+        std::vector<std::vector<Direction> > b; // Moving directions.
 
         // Init s and b.
         for (size_t i = 0; i <= v.size(); i++) {
@@ -43,38 +45,72 @@ namespace Algorithm {
 
         for (size_t i = 1; i <= v.size(); i++) {
             for (size_t j = 1; j <= w.size(); j++) {
-                size_t wj =  s[i-1][j-1] + 1;
-                size_t maxNeighbour = std::max(s[i][j-1], s[i-1][j]);
+                size_t wj = s[i - 1][j - 1] + 1;
+                size_t maxNeighbour = std::max(s[i][j - 1], s[i - 1][j]);
 
                 s[i][j] = std::max(v[i - 1] == w[j - 1] ? wj : 0, maxNeighbour);
 
                 // Set direction.
                 Direction direction = Direction::UNKNOWN;
 
-                if (s[i][j] == s[i-1][j]) direction = Direction::UP;
-                else if (s[i][j] == s[i][j-1]) direction = Direction::LEFT;
-                else if (s[i][j] == s[i-1][j-1] + 1) direction = Direction::DIAGONAL;
+                if (s[i][j] == s[i - 1][j]) direction = Direction::UP;
+                else if (s[i][j] == s[i][j - 1]) direction = Direction::LEFT;
+                else if (s[i][j] == s[i - 1][j - 1] + 1) direction = Direction::DIAGONAL;
 
                 b[i][j] = direction;
             }
         }
 
-        return { s.back().back(), b };
+        return {s.back().back(), b};
     }
 
     inline void run_LCS(std::string firstDnkPath, std::string secondDnkPath, size_t n, size_t m) {
+        std::filesystem::create_directories(OUTPUT_FOLDER);
+        std::string outputPath = OUTPUT_FOLDER;
+
+        size_t posOne = firstDnkPath.find('/');
+        std::string firstDnkFileName = firstDnkPath.substr(posOne + 1);
+
+        outputPath += firstDnkFileName;
+        outputPath += "_";
+        outputPath += std::to_string(n);
+
+        size_t posTwo = firstDnkPath.find('/');
+        std::string secondFileName = firstDnkPath.substr(posTwo + 1);
+
+        outputPath += secondFileName;
+        outputPath += "_";
+        outputPath += std::to_string(m);
+        outputPath += ".txt";
+
+        std::ofstream outputFile(outputPath);
+
         auto firstDnk = Util::readFile(firstDnkPath);
         auto secondDnk = Util::readFile(secondDnkPath);
 
         auto v = firstDnk.substr(0, n);
         auto w = secondDnk.substr(0, m);
 
+        auto start = std::chrono::high_resolution_clock::now();
         auto lcs = LCS(v, w);
+        auto stop = std::chrono::high_resolution_clock::now();
 
         size_t d = n + m - 2 * lcs.first;
 
-        printLCS(lcs.second, v, n, m);
-        std::cout << d << std::endl;
+        const auto msDuration = duration_cast<std::chrono::milliseconds>(stop - start);
+        const auto microsDuration = duration_cast<std::chrono::microseconds>(stop - start);
+
+        Util::output(outputFile, "LCS = ", true);
+        printLCS(lcs.second, v, n, m, outputFile);
+        Util::output(outputFile, "\n|LCS| = " + std::to_string(d), true);
+
+        Util::output(
+            outputFile,
+            "\nExecution time: " +
+            std::to_string(msDuration.count()) + " ms -> " +
+            std::to_string(microsDuration.count()) + " us\n",
+            true
+        );
     }
 }
 
